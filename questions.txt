@@ -1,0 +1,252 @@
+爬虫的去重
+https://www.zhihu.com/question/30329757
+https://bbs.csdn.net/topics/391847368
+
+清洗
+https://blog.csdn.net/csa121/article/details/78545470
+
+清理数据和标准化的简单示例：
+input = re.sub('\n+', " ", input)       #replaces all instances of the newline character
+
+input = re.sub('\[[0-9]*\]', "", input) #去除[11] 这些数据
+
+input = re.sub(' +', " ", input)        #replaces all instances of multiple spaces in a row with a singlespace,
+
+input = bytes(input, "UTF-8")           #escape charactersare eliminated by encoding the content with UTF-8.
+
+input = input.decode("ascii", "ignore")
+
+item=item.strip(string.punctuation)     #去除符号print(string.punctuation) !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+
+
+scrapy 加selenium
+scrapy post提交data
+爬取内容顺序问题
+
+-------------------------------
+
+两种方法能够使 requests 不被过滤: 
+1. 在 allowed_domains 中加入 url 
+2. 在 scrapy.Request() 函数中将参数 dont_filter=True 设置为 True
+
+-------------------------------
+
+scrapy.http.FormRequest和scrapy.FormRequest和scrapy.FormRequest.from_response
+
+类scrapy.http.FormRequest（url [，formdata，... ] ）
+FormRequest除了标准Request方法外，这些对象还支持以下类方法：
+classmethod from_response（response [，formname = None，formnumber = 0，formdata = None，formxpath = None，clickdata = None，dont_click = False，... ] ）
+
+
+使用FormRequest.from_response()方法模拟用户登录
+通常网站通过 <input type="hidden"> 实现对某些表单字段（如数据或是登录界面中的认证令牌等）的预填充。 使用Scrapy抓取网页时，如果想要预填充或重写像用户名、用户密码这些表单字段， 可以使用 FormRequest.from_response() 方法实现
+
+
+使用FormRequest通过HTTP POST发送data
+return [FormRequest(url="http://www.example.com/post/action",
+                    formdata={'name': 'John Doe', 'age': '27'},
+                    callback=self.after_post)]
+
+
+普通请求使用scrapy.Request类就可以实现，但是遇到模拟表单或Ajax提交post请求的时候，Request类就不如 子类 FormRequest类方便了，因为他自带 formdata ，专门用来设置表单字段数据，默认method也是POST
+
+
+#将字典data转化为url的get参数
+from urllib.parse import urlencode
+params = urlencode(data)   ==>  sn=150&ch=beauty&listtype=new
+
+
+
+每一个item输出一行json 后缀为jsonlines或jl
+scrapy crawl quotes -o q.jsonlines 或 scrapy crawl quotes -o q.jl
+
+输出json,csv,xml,pickle,marshal等格式以及ftp远程输出:
+scrapy crawl quotes -o q.marshal 等
+scrapy crawl quotes -o ftp://user:pass@ftp.example.com/path/to/q.csv
+
+
+断点续传
+scrapy crawl tudi -s JOBDIR=crawls/go_on
+scrapy crawl tudi --output=tudi.csv -s LOG_LEVEL=INFO
+
+scrapy中response对象不能直接调用正则,需要先调用xpath()再正则匹配
+re_first()选取列表第一个元素,类似extract_first()
+如: response.xpath('//a/text()').re_first('name:\s(.*)')
+
+
+re.match         #从头匹配
+re.search        #全局匹配第一个符合的字符串
+re.findall       #匹配全部，放到列表
+re.finditer      #找到匹配的所有子串，并把它们作为一个迭代器返回。这个匹配是从左到右有序地返回。如果无匹配，返回空列表。用for 循环出匹配到值。
+re.split         #匹配到到值进行分割。
+re.sub           #re.sub 函数进行以正则表达式为基础的替换工作。
+
+
+windows下:
+redis服务端启动命令
+redis-server.exe redis.windows.conf
+
+redis-cli -h 服务端ip -p 6379
+auth 密码
+
+
+ubuntu下:
+redis服务端启动命令
+sudo redis-server ./redis.conf (要在conf文件路径中执行)
+
+
+查看当前和上一级路径(创建文件夹用)
+import os
+currentPathName = os.getcwd() #当前路径
+parentPathName = os.path.abspath(os.path.join(currentPathName, os.pardir)) #上一级路径
+folder_path = parentPathName + "/image" + "/"
+
+
+判断当前是否存在此folder_path文件夹,如果没有就创建
+if not os.path.exists(folder_path):
+	os.makedirs(folder_path)
+
+
+删除下标为0的值,并且返回列表list1
+del list1[0]
+
+
+使用.pop()删除最后一个元素
+li = [1,2,4,5,6]
+li.pop()  ==> 6
+
+
+字符串最后一个字符去掉
+s = 'abcdef'
+print(s[:-1])
+
+
+判断是否为某种编码的概率
+import chardet
+content = response.content
+chardit1 = chardet.detect(content)  ==> {'encoding': 'utf-8', 'confidence': 0.99, 'language': ''}
+bm = chardit1['encoding'].lower()   #lower()不清楚什么意思
+content = content.decode(chardit1['encoding'])
+
+
+格式化当前时间
+now_time = time.strftime("%Y%m%d%H%M%S", time.localtime())
+
+
+globals() # globals 函数返回一个全局变量的字典，包括所有导入的变量
+
+
+
+查询重复的数据:
+select title,count(*) as count from news group by title having count>1;
+title count
+a       2
+b	2
+c	2
+
+查询重复记录(一条)
+select title from news group by title having count(*)>1;
+title
+a
+b
+c
+
+查询重复记录(全部):
+select * from news t where t.title in(select title from news group by title having count(*)>1);
+id title img url html
+4   a     ...
+5   b     ...
+8   c     ...
+
+删除重复记录保留一条:
+delete from news where title in(
+    select t.title from(
+        select title from news group by title having count(*)>1
+    ) t
+)and id not in(
+    select t.id from(
+        select max(id) as id from news group by title having count(*)>1
+    ) t
+)
+
+多字段重复:
+select title,url from news group by title,url having count(*)>1
+
+查询重复记录(全部):
+select * from news t where(t.title,t.url)in(select title,url from news group by title,url having count(*)>1);
+
+无主键去重:
+table ab
+aid bid
+1    1
+1    2
+2    2
+3    3
+
+--建临时表插入去重数据
+create table ab_temp (select * from ab group by aid,bid having count(*)>1);
+--删除重复数据
+delete from ab where (aid,bid) in (
+    select t.aid,t.bid from (
+        select aid,bid from ab group by aid,bid having count(*)>1
+    ) t
+);
+--插入去重数据
+insert into ab select * from ab_temp;
+--删除临时表
+drop table ab_temp;
+
+
+mysql去重的最方便的两种方法:
+方法一:(distinct)
+ table1
+id name
+   1 a
+   2 b
+   3 c
+   4 c
+   5 b
+
+select distinct name from table1
+#name
+   a
+   b
+   c
+
+select *, count(distinct name) from table1 group by name ???
+# id name count(distinct name)
+   1 a 1
+   2 b 1
+   3 c 1
+
+
+查询 按指定字段排序ASC正序,DESC倒叙
+SELECT * FROM tudi ORDER BY ordnum ASC;
+
+
+在 name 上面 建立了索引
+CREATE INDEX idx_test4_name ON test_tab (name );
+
+
+哈希表???
+
+
+title = re.findall(r'"raw_title":"([^"]+)"',resp.text,re.I)  #正则保存所有raw_title的内容,re.I 忽略大小写
+
+
+增加重试连接次数
+requests.adapters.DEFAULT_RETRIES = 5
+response = requests.get(url, stream=True)
+状态码
+status = response.status_code
+
+关闭多余的连接
+s = requests.session()
+s.keep_alive = False
+
+
+requests获取响应时间(elapsed)与超时（timeout:
+http://www.bubuko.com/infodetail-2428027.html
+
+
+从小到大排序list.sort(),从大到小排序list.sort(reverse = True)
